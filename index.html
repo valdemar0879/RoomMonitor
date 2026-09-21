@@ -24,14 +24,14 @@
         </figure>
 
         <div class="chart-section">
-          <canvas id="temperature-chart" aria-label="Room 1 temperature over time"></canvas>
+          <canvas id="temperature-chart" class="chart-canvas" aria-label="Room 1 temperature over time"></canvas>
           <div class="chart-legend" aria-label="Temperature sensor legend">
             <span><i class="legend-swatch sensor-t1"></i>T1</span>
             <span><i class="legend-swatch sensor-t2"></i>T2</span>
             <span><i class="legend-swatch sensor-t3"></i>T3</span>
             <span><i class="legend-swatch sensor-t4"></i>T4</span>
           </div>
-          <canvas id="radiator-chart" aria-label="Room 1 radiator opening over time"></canvas>
+          <canvas id="radiator-chart" class="chart-canvas" aria-label="Room 1 radiator opening over time"></canvas>
           <div class="chart-legend" aria-label="Radiator legend">
             <span><i class="legend-swatch radiator-big"></i>Big radiator</span>
             <span><i class="legend-swatch radiator-small"></i>Small radiator</span>
@@ -138,22 +138,28 @@
         ].map((values) => values.map((value, index) => ({ value, time: times[index] })));
       }
 
+      function prepareChartCanvas(canvas, context) {
+        const bounds = canvas.getBoundingClientRect();
+        const width = Math.max(1, Math.round(bounds.width));
+        const height = Math.max(1, Math.round(bounds.height));
+        const scale = window.devicePixelRatio || 1;
+        canvas.width = Math.round(width * scale);
+        canvas.height = Math.round(height * scale);
+        context.setTransform(scale, 0, 0, scale, 0, 0);
+        return { width, height };
+      }
+
       function drawTemperatureChart(series) {
         if (!series.length || !series.some((sensor) => sensor.length)) return;
 
         const context = chart.getContext("2d");
-        const width = chart.clientWidth;
-        const height = chart.clientHeight;
-        const scale = window.devicePixelRatio || 1;
+        const { width, height } = prepareChartCanvas(chart, context);
         const padding = { top: 20, right: 20, bottom: 35, left: 42 };
         const temperatures = series.flat().map((point) => point.temperature);
         const minimum = Math.floor(Math.min(...temperatures) - 1);
         const maximum = Math.ceil(Math.max(...temperatures) + 1);
         const longestSeries = Math.max(...series.map((sensor) => sensor.length));
 
-        chart.width = width * scale;
-        chart.height = height * scale;
-        context.setTransform(scale, 0, 0, scale, 0, 0);
         context.clearRect(0, 0, width, height);
         context.font = "12px Times New Roman";
         context.fillStyle = "#555555";
@@ -203,16 +209,11 @@
         if (!series.length || !series.some((radiator) => radiator.length)) return;
 
         const context = radiatorChart.getContext("2d");
-        const width = radiatorChart.clientWidth;
-        const height = radiatorChart.clientHeight;
-        const scale = window.devicePixelRatio || 1;
+        const { width, height } = prepareChartCanvas(radiatorChart, context);
         const padding = { top: 20, right: 20, bottom: 35, left: 42 };
         const longestSeries = Math.max(...series.map((radiator) => radiator.length));
         const colors = ["#c74343", "#e09b2d"];
 
-        radiatorChart.width = width * scale;
-        radiatorChart.height = height * scale;
-        context.setTransform(scale, 0, 0, scale, 0, 0);
         context.clearRect(0, 0, width, height);
         context.font = "12px Times New Roman";
         context.fillStyle = "#555555";
