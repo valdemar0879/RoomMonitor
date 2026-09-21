@@ -31,6 +31,11 @@
             <span><i class="legend-swatch sensor-t3"></i>T3</span>
             <span><i class="legend-swatch sensor-t4"></i>T4</span>
           </div>
+          <canvas id="radiator-chart" aria-label="Room 1 radiator opening over time"></canvas>
+          <div class="chart-legend" aria-label="Radiator legend">
+            <span><i class="legend-swatch radiator-big"></i>Big radiator</span>
+            <span><i class="legend-swatch radiator-small"></i>Small radiator</span>
+          </div>
         </div>
       </section>
     </main>
@@ -40,6 +45,7 @@
           name: "Room 1",
           image: "RoomSketchV1.jpg",
           sensorFiles: ["room-1/T1.csv", "room-1/T2.csv", "room-1/T3.csv", "room-1/T4.csv"],
+          radiatorFiles: ["room-1/big-radiator.csv", "room-1/small-radiator.csv"],
           fallback: [
             [20.1, 20.7, 21.4, 21.2, 22.0, 21.5, 21.8],
             [19.4, 20.0, 20.8, 20.5, 21.1, 20.9, 21.3],
@@ -51,6 +57,7 @@
           name: "Room 2",
           image: "RoomSketchV1.jpg",
           sensorFiles: ["room-2/T1.csv", "room-2/T2.csv", "room-2/T3.csv", "room-2/T4.csv"],
+          radiatorFiles: ["room-2/big-radiator.csv", "room-2/small-radiator.csv"],
           fallback: [
             [18.9, 19.4, 19.8, 20.1, 20.0, 20.6, 20.3],
             [19.1, 19.7, 20.0, 20.4, 20.2, 20.8, 20.6],
@@ -64,7 +71,9 @@
       const roomSelect = document.querySelector("#room-select");
       const roomImage = document.querySelector("#room-image");
       const chart = document.querySelector("#temperature-chart");
+      const radiatorChart = document.querySelector("#radiator-chart");
       let activeSeries = [];
+      let activeRadiatorSeries = [];
 
       function parseSensorCsv(csvText) {
         const rows = csvText.trim().split(/\r?\n/).filter(Boolean);
@@ -83,10 +92,34 @@
         }).filter((point) => Number.isFinite(point.temperature) && point.time);
       }
 
+      function parseRadiatorCsv(csvText) {
+        const rows = csvText.trim().split(/\r?\n/).filter(Boolean);
+        const firstColumns = rows[0].split(",").map((column) => column.trim().toLowerCase());
+        const hasHeader = firstColumns.includes("opening") || firstColumns.includes("percentage");
+        const valueIndex = hasHeader ? (firstColumns.indexOf("opening") !== -1 ? firstColumns.indexOf("opening") : firstColumns.indexOf("percentage")) : 0;
+        const timeIndex = hasHeader ? firstColumns.indexOf("time") : 1;
+        if (hasHeader) rows.shift();
+
+        return rows.map((row) => {
+          const columns = row.split(",");
+          return {
+            value: Number.parseFloat(columns[valueIndex]),
+            time: columns[timeIndex].trim(),
+          };
+        }).filter((point) => Number.isFinite(point.value) && point.time);
+      }
+
       async function loadSensorData(room) {
         const responses = await Promise.all(room.sensorFiles.map((file) => fetch(file)));
         if (responses.some((response) => !response.ok)) throw new Error("Sensor CSV unavailable");
         return Promise.all(responses.map((response) => response.text())).then((files) => files.map(parseSensorCsv));
+      }
+
+      async function loadRadiatorData(room) {
+        const responses = await Promise.all(room.radiatorFiles.map((file) => fetch(file)));
+        if (responses.some((response) => !response.ok)) throw new Error("Radiator CSV unavailable");
+        const files = await Promise.all(responses.map((response) => response.text()));
+        return files.map(parseRadiatorCsv);
       }
 
       function makeFallbackSeries(room) {
@@ -95,6 +128,14 @@
           temperature,
           time: times[index],
         })));
+      }
+
+      function makeFallbackRadiatorSeries() {
+        const times = ["12:00", "14:00", "16:00", "18:00", "20:00", "22:00", "00:00"];
+        return [
+          [0.85, 0.72, 0.65, 0.55, 0.68, 0.78, 0.82],
+          [0.42, 0.35, 0.28, 0.2, 0.3, 0.38, 0.45],
+        ].map((values) => values.map((value, index) => ({ value, time: times[index] })));
       }
 
       function drawTemperatureChart(series) {
@@ -158,6 +199,57 @@
         });
       }
 
+      function drawRadiatorChart(series) {
+        if (!series.length || !series.some((radiator) => radiator.length)) return;
+
+        const context = radiatorChart.getContext("2d");
+        const width = radiatorChart.clientWidth;
+        const height = radiatorChart.clientHeight;
+        const scale = window.devicePixelRatio || 1;
+        const padding = { top: 20, right: 20, bottom: 35, left: 42 };
+        const longestSeries = Math.max(...series.map((radiator) => radiator.length));
+        const colors = ["#c74343", "#e09b2d"];
+
+        radiatorChart.width = width * scale;
+        radiatorChart.height = height * scale;
+        context.setTransform(scale, 0, 0, scale, 0, 0);
+        context.clearRect(0, 0, width, height);
+        context.font = "12px Times New Roman";
+        context.fillStyle = "#555555";
+        context.strokeStyle = "#dddddd";
+        context.lineWidth = 1;
+
+        for (let value = 0; value <= 1; value += 0.2) {
+          const y = padding.top + ((1 - value) / 1) * (height - padding.top - padding.bottom);
+          context.beginPath();
+          context.moveTo(padding.left, y);
+          context.lineTo(width - padding.right, y);
+          context.stroke();
+          context.fillText(value.toFixed(2), 8, y + 4);
+        }
+
+        series.forEach((radiator, radiatorIndex) => {
+          context.strokeStyle = colors[radiatorIndex];
+          context.fillStyle = colors[radiatorIndex];
+          context.lineWidth = 3;
+          context.beginPath();
+          radiator.forEach((point, index) => {
+            const x = padding.left + (index / (longestSeries - 1)) * (width - padding.left - padding.right);
+            const y = padding.top + (1 - point.value) * (height - padding.top - padding.bottom);
+            if (index === 0) context.moveTo(x, y);
+            else context.lineTo(x, y);
+          });
+          context.stroke();
+        });
+
+        context.fillStyle = "#555555";
+        const labels = series[0].map((point) => point.time);
+        [0, Math.floor((labels.length - 1) / 2), labels.length - 1].forEach((index) => {
+          const x = padding.left + (index / (longestSeries - 1)) * (width - padding.left - padding.right);
+          context.fillText(labels[index], x - 12, height - 12);
+        });
+      }
+
       async function showRoom(roomKey) {
         const room = roomData[roomKey];
         roomImage.src = room.image;
@@ -168,14 +260,23 @@
         } catch {
           activeSeries = makeFallbackSeries(room);
         }
+        try {
+          activeRadiatorSeries = await loadRadiatorData(room);
+        } catch {
+          activeRadiatorSeries = makeFallbackRadiatorSeries();
+        }
         drawTemperatureChart(activeSeries);
+        drawRadiatorChart(activeRadiatorSeries);
       }
 
       roomSelect.addEventListener("change", () => {
         showRoom(roomSelect.value);
       });
 
-      window.addEventListener("resize", () => drawTemperatureChart(activeSeries));
+      window.addEventListener("resize", () => {
+        drawTemperatureChart(activeSeries);
+        drawRadiatorChart(activeRadiatorSeries);
+      });
       showRoom(roomSelect.value);
     </script>
   </body>
