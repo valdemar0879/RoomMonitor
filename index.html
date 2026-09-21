@@ -157,6 +157,33 @@
         });
       }
 
+      temperatureReadings.forEach((reading) => {
+        reading.addEventListener("pointerdown", (event) => {
+          event.preventDefault();
+          reading.setPointerCapture(event.pointerId);
+          const figureBounds = document.querySelector(".room-figure").getBoundingClientRect();
+
+          function moveReading(moveEvent) {
+            const x = ((moveEvent.clientX - figureBounds.left) / figureBounds.width) * 100;
+            const y = ((moveEvent.clientY - figureBounds.top) / figureBounds.height) * 100;
+            reading.style.left = `${Math.max(0, Math.min(100, x))}%`;
+            reading.style.top = `${Math.max(0, Math.min(100, y))}%`;
+            reading.style.right = "auto";
+            reading.style.bottom = "auto";
+          }
+
+          function stopMoving() {
+            reading.removeEventListener("pointermove", moveReading);
+            reading.removeEventListener("pointerup", stopMoving);
+            reading.removeEventListener("pointercancel", stopMoving);
+          }
+
+          reading.addEventListener("pointermove", moveReading);
+          reading.addEventListener("pointerup", stopMoving);
+          reading.addEventListener("pointercancel", stopMoving);
+        });
+      });
+
       function prepareChartCanvas(canvas, context) {
         const bounds = canvas.getBoundingClientRect();
         const width = Math.max(1, Math.round(bounds.width));
