@@ -68,13 +68,11 @@
 
       function parseSensorCsv(csvText) {
         const rows = csvText.trim().split(/\r?\n/).filter(Boolean);
-        const headers = rows.shift().split(",").map((header) => header.trim().toLowerCase());
-        const temperatureIndex = headers.indexOf("temp");
-        const timeIndex = headers.indexOf("time");
-
-        if (temperatureIndex === -1 || timeIndex === -1) {
-          throw new Error("CSV must contain temp and Time columns");
-        }
+        const firstColumns = rows[0].split(",").map((column) => column.trim().toLowerCase());
+        const hasHeader = firstColumns.includes("temp") && firstColumns.includes("time");
+        const temperatureIndex = hasHeader ? firstColumns.indexOf("temp") : 0;
+        const timeIndex = hasHeader ? firstColumns.indexOf("time") : 1;
+        if (hasHeader) rows.shift();
 
         return rows.map((row) => {
           const columns = row.split(",");
