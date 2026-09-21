@@ -4,12 +4,14 @@ body {
   background: #ffffff;
   color: #000000;
   min-height: 100vh;
-  display: grid;
-  place-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
 }
 
 .container {
   width: min(100% - 2rem, 1000px);
+  margin: 0 auto;
   text-align: center;
   padding: 2rem;
 }
