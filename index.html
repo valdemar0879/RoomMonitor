@@ -74,6 +74,7 @@
       const radiatorChart = document.querySelector("#radiator-chart");
       let activeSeries = [];
       let activeRadiatorSeries = [];
+      let roomLoadId = 0;
 
       function parseSensorCsv(csvText) {
         const rows = csvText.trim().split(/\r?\n/).filter(Boolean);
@@ -143,8 +144,12 @@
         const width = Math.max(1, Math.round(bounds.width));
         const height = Math.max(1, Math.round(bounds.height));
         const scale = window.devicePixelRatio || 1;
-        canvas.width = Math.round(width * scale);
-        canvas.height = Math.round(height * scale);
+        const pixelWidth = Math.round(width * scale);
+        const pixelHeight = Math.round(height * scale);
+        if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
+          canvas.width = pixelWidth;
+          canvas.height = pixelHeight;
+        }
         context.setTransform(scale, 0, 0, scale, 0, 0);
         return { width, height };
       }
@@ -252,20 +257,24 @@
       }
 
       async function showRoom(roomKey) {
+        const loadId = ++roomLoadId;
         const room = roomData[roomKey];
         roomImage.src = room.image;
         roomImage.alt = room.name;
         chart.setAttribute("aria-label", `${room.name} temperature over time`);
         try {
-          activeSeries = await loadSensorData(room);
+          const sensorSeries = await loadSensorData(room);
+          if (loadId === roomLoadId) activeSeries = sensorSeries;
         } catch {
-          activeSeries = makeFallbackSeries(room);
+          if (loadId === roomLoadId) activeSeries = makeFallbackSeries(room);
         }
         try {
-          activeRadiatorSeries = await loadRadiatorData(room);
+          const radiatorSeries = await loadRadiatorData(room);
+          if (loadId === roomLoadId) activeRadiatorSeries = radiatorSeries;
         } catch {
-          activeRadiatorSeries = makeFallbackRadiatorSeries();
+          if (loadId === roomLoadId) activeRadiatorSeries = makeFallbackRadiatorSeries();
         }
+        if (loadId !== roomLoadId) return;
         drawTemperatureChart(activeSeries);
         drawRadiatorChart(activeRadiatorSeries);
       }
