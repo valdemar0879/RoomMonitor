@@ -66,16 +66,33 @@ select {
   font-size: 0.95rem;
 }
 
-.chart-legend span {
+.chart-legend > span {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
 }
 
 .legend-swatch {
+  display: inline-block;
   width: 0.8rem;
   height: 0.8rem;
   border-radius: 50%;
+}
+
+.sensor-t1 {
+  background-color: #2374ab;
+}
+
+.sensor-t2 {
+  background-color: #d66b2f;
+}
+
+.sensor-t3 {
+  background-color: #3a8f5b;
+}
+
+.sensor-t4 {
+  background-color: #8957a8;
 }
 
 @media (max-width: 520px) {

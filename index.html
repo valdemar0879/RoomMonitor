@@ -25,7 +25,12 @@
 
         <div class="chart-section">
           <canvas id="temperature-chart" aria-label="Room 1 temperature over time"></canvas>
-          <div id="chart-legend" class="chart-legend" aria-label="Temperature sensor legend"></div>
+          <div class="chart-legend" aria-label="Temperature sensor legend">
+            <span><i class="legend-swatch sensor-t1"></i>T1</span>
+            <span><i class="legend-swatch sensor-t2"></i>T2</span>
+            <span><i class="legend-swatch sensor-t3"></i>T3</span>
+            <span><i class="legend-swatch sensor-t4"></i>T4</span>
+          </div>
         </div>
       </section>
     </main>
@@ -59,7 +64,6 @@
       const roomSelect = document.querySelector("#room-select");
       const roomImage = document.querySelector("#room-image");
       const chart = document.querySelector("#temperature-chart");
-      const chartLegend = document.querySelector("#chart-legend");
       let activeSeries = [];
 
       function parseSensorCsv(csvText) {
@@ -93,18 +97,6 @@
           temperature,
           time: times[index],
         })));
-      }
-
-      function drawLegend() {
-        chartLegend.replaceChildren();
-        activeSeries.forEach((series, index) => {
-          const item = document.createElement("span");
-          const swatch = document.createElement("span");
-          swatch.className = "legend-swatch";
-          swatch.style.backgroundColor = sensorColors[index];
-          item.append(swatch, `T${index + 1}`);
-          chartLegend.appendChild(item);
-        });
       }
 
       function drawTemperatureChart(series) {
@@ -178,7 +170,6 @@
         } catch {
           activeSeries = makeFallbackSeries(room);
         }
-        drawLegend();
         drawTemperatureChart(activeSeries);
       }
 
