@@ -51,23 +51,19 @@ select {
   text-align: left;
 }
 
-#temperature-chart {
+#temperature-chart,
+#radiator-chart {
   display: block;
   width: 100%;
   height: 250px;
+  box-sizing: border-box;
   background: #ffffff;
   border: 1px solid #e2e2e2;
   border-radius: 6px;
 }
 
 #radiator-chart {
-  display: block;
-  width: 100%;
-  height: 250px;
   margin-top: 2rem;
-  background: #ffffff;
-  border: 1px solid #e2e2e2;
-  border-radius: 6px;
 }
 
 .chart-legend {
