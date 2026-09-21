@@ -49,6 +49,7 @@ select {
 
 .temperature-box {
   position: absolute;
+  z-index: 2;
   padding: 0.65rem 0.8rem;
   border: 1px solid rgba(0, 0, 0, 0.2);
   border-radius: 6px;
@@ -60,8 +61,8 @@ select {
 
 /* Adjust these positions to match the sensor locations in the room image. */
 .temp-t1 {
-  top: 92%;
-  left: 50%;
+  top: 8%;
+  left: 8%;
 }
 
 .temp-t2 {
@@ -70,13 +71,13 @@ select {
 }
 
 .temp-t3 {
-  bottom: 8%;
-  left: 50%;
+  top: 50%;
+  left: 8%;
 }
 
 .temp-t4 {
+  top: 50%;
   right: 8%;
-  bottom: 8%;
 }
 
 .chart-section {
