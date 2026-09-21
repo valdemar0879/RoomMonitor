@@ -8,7 +8,7 @@
   </head>
   <body>
     <main class="container">
-      <h1>Room Monitor Test page</h1>
+      <h1>Room Monitor</h1>
       <section class="room-panel" aria-live="polite">
         <div class="room-panel-header">
           <div>
@@ -25,6 +25,7 @@
 
         <div class="chart-section">
           <canvas id="temperature-chart" aria-label="Room 1 temperature over time"></canvas>
+          <div id="chart-legend" class="chart-legend" aria-label="Temperature sensor legend"></div>
         </div>
       </section>
     </main>
@@ -33,27 +34,91 @@
         "room-1": {
           name: "Room 1",
           image: "RoomSketchV1.jpg",
-          temperatures: [20.1, 20.7, 21.4, 21.2, 22.0, 21.5, 21.8],
+          sensorFiles: ["T1.csv", "T2.csv", "T3.csv", "T4.csv"],
+          fallback: [
+            [20.1, 20.7, 21.4, 21.2, 22.0, 21.5, 21.8],
+            [19.4, 20.0, 20.8, 20.5, 21.1, 20.9, 21.3],
+            [21.2, 21.5, 21.8, 22.1, 22.4, 22.0, 22.3],
+            [18.8, 19.2, 19.7, 19.5, 20.0, 20.2, 20.1],
+          ],
         },
         "room-2": {
           name: "Room 2",
           image: "RoomSketchV1.jpg",
-          temperatures: [18.9, 19.4, 19.8, 20.1, 20.0, 20.6, 20.3],
+          sensorFiles: ["T1.csv", "T2.csv", "T3.csv", "T4.csv"],
+          fallback: [
+            [18.9, 19.4, 19.8, 20.1, 20.0, 20.6, 20.3],
+            [19.1, 19.7, 20.0, 20.4, 20.2, 20.8, 20.6],
+            [17.9, 18.4, 18.8, 19.0, 19.3, 19.1, 19.5],
+            [20.0, 20.2, 20.6, 20.5, 20.9, 21.0, 21.2],
+          ],
         },
       };
 
+      const sensorColors = ["#2374ab", "#d66b2f", "#3a8f5b", "#8957a8"];
       const roomSelect = document.querySelector("#room-select");
       const roomImage = document.querySelector("#room-image");
       const chart = document.querySelector("#temperature-chart");
+      const chartLegend = document.querySelector("#chart-legend");
+      let activeSeries = [];
 
-      function drawTemperatureChart(temperatures) {
+      function parseSensorCsv(csvText) {
+        const rows = csvText.trim().split(/\r?\n/).filter(Boolean);
+        const headers = rows.shift().split(",").map((header) => header.trim().toLowerCase());
+        const temperatureIndex = headers.indexOf("temp");
+        const timeIndex = headers.indexOf("time");
+
+        if (temperatureIndex === -1 || timeIndex === -1) {
+          throw new Error("CSV must contain temp and Time columns");
+        }
+
+        return rows.map((row) => {
+          const columns = row.split(",");
+          return {
+            temperature: Number.parseFloat(columns[temperatureIndex]),
+            time: columns[timeIndex].trim(),
+          };
+        }).filter((point) => Number.isFinite(point.temperature) && point.time);
+      }
+
+      async function loadSensorData(room) {
+        const responses = await Promise.all(room.sensorFiles.map((file) => fetch(file)));
+        if (responses.some((response) => !response.ok)) throw new Error("Sensor CSV unavailable");
+        return Promise.all(responses.map((response) => response.text())).then((files) => files.map(parseSensorCsv));
+      }
+
+      function makeFallbackSeries(room) {
+        const times = ["12:00", "14:00", "16:00", "18:00", "20:00", "22:00", "00:00"];
+        return room.fallback.map((temperatures) => temperatures.map((temperature, index) => ({
+          temperature,
+          time: times[index],
+        })));
+      }
+
+      function drawLegend() {
+        chartLegend.replaceChildren();
+        activeSeries.forEach((series, index) => {
+          const item = document.createElement("span");
+          const swatch = document.createElement("span");
+          swatch.className = "legend-swatch";
+          swatch.style.backgroundColor = sensorColors[index];
+          item.append(swatch, `T${index + 1}`);
+          chartLegend.appendChild(item);
+        });
+      }
+
+      function drawTemperatureChart(series) {
+        if (!series.length || !series.some((sensor) => sensor.length)) return;
+
         const context = chart.getContext("2d");
         const width = chart.clientWidth;
         const height = chart.clientHeight;
         const scale = window.devicePixelRatio || 1;
         const padding = { top: 20, right: 20, bottom: 35, left: 42 };
+        const temperatures = series.flat().map((point) => point.temperature);
         const minimum = Math.floor(Math.min(...temperatures) - 1);
         const maximum = Math.ceil(Math.max(...temperatures) + 1);
+        const longestSeries = Math.max(...series.map((sensor) => sensor.length));
 
         chart.width = width * scale;
         chart.height = height * scale;
@@ -73,45 +138,55 @@
           context.fillText(`${value} C`, 4, y + 4);
         }
 
-        context.strokeStyle = "#2374ab";
-        context.lineWidth = 3;
-        context.beginPath();
-        temperatures.forEach((temperature, index) => {
-          const x = padding.left + (index / (temperatures.length - 1)) * (width - padding.left - padding.right);
-          const y = padding.top + ((maximum - temperature) / (maximum - minimum)) * (height - padding.top - padding.bottom);
-          if (index === 0) context.moveTo(x, y);
-          else context.lineTo(x, y);
-        });
-        context.stroke();
-
-        context.fillStyle = "#2374ab";
-        temperatures.forEach((temperature, index) => {
-          const x = padding.left + (index / (temperatures.length - 1)) * (width - padding.left - padding.right);
-          const y = padding.top + ((maximum - temperature) / (maximum - minimum)) * (height - padding.top - padding.bottom);
+        series.forEach((sensor, sensorIndex) => {
+          context.strokeStyle = sensorColors[sensorIndex];
+          context.fillStyle = sensorColors[sensorIndex];
+          context.lineWidth = 3;
           context.beginPath();
-          context.arc(x, y, 4, 0, Math.PI * 2);
-          context.fill();
+          sensor.forEach((point, index) => {
+            const x = padding.left + (index / (longestSeries - 1)) * (width - padding.left - padding.right);
+            const y = padding.top + ((maximum - point.temperature) / (maximum - minimum)) * (height - padding.top - padding.bottom);
+            if (index === 0) context.moveTo(x, y);
+            else context.lineTo(x, y);
+          });
+          context.stroke();
+
+          sensor.forEach((point, index) => {
+            const x = padding.left + (index / (longestSeries - 1)) * (width - padding.left - padding.right);
+            const y = padding.top + ((maximum - point.temperature) / (maximum - minimum)) * (height - padding.top - padding.bottom);
+            context.beginPath();
+            context.arc(x, y, 4, 0, Math.PI * 2);
+            context.fill();
+          });
         });
 
         context.fillStyle = "#555555";
-        context.fillText("12:00", padding.left - 12, height - 12);
-        context.fillText("18:00", width / 2 - 12, height - 12);
-        context.fillText("00:00", width - padding.right - 24, height - 12);
+        const labels = series[0].map((point) => point.time);
+        [0, Math.floor((labels.length - 1) / 2), labels.length - 1].forEach((index) => {
+          const x = padding.left + (index / (longestSeries - 1)) * (width - padding.left - padding.right);
+          context.fillText(labels[index], x - 12, height - 12);
+        });
       }
 
-      function showRoom(roomKey) {
+      async function showRoom(roomKey) {
         const room = roomData[roomKey];
         roomImage.src = room.image;
         roomImage.alt = room.name;
         chart.setAttribute("aria-label", `${room.name} temperature over time`);
-        drawTemperatureChart(room.temperatures);
+        try {
+          activeSeries = await loadSensorData(room);
+        } catch {
+          activeSeries = makeFallbackSeries(room);
+        }
+        drawLegend();
+        drawTemperatureChart(activeSeries);
       }
 
       roomSelect.addEventListener("change", () => {
         showRoom(roomSelect.value);
       });
 
-      window.addEventListener("resize", () => showRoom(roomSelect.value));
+      window.addEventListener("resize", () => drawTemperatureChart(activeSeries));
       showRoom(roomSelect.value);
     </script>
   </body>
