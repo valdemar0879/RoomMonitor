@@ -21,6 +21,10 @@
 
         <figure class="room-figure">
           <img id="room-image" src="RoomSketchV1.jpg" alt="Room 1" />
+          <span id="temperature-t1" class="temperature-box temp-t1">T1: -- C</span>
+          <span id="temperature-t2" class="temperature-box temp-t2">T2: -- C</span>
+          <span id="temperature-t3" class="temperature-box temp-t3">T3: -- C</span>
+          <span id="temperature-t4" class="temperature-box temp-t4">T4: -- C</span>
         </figure>
 
         <div class="chart-section">
@@ -70,6 +74,12 @@
       const sensorColors = ["#2374ab", "#d66b2f", "#3a8f5b", "#8957a8"];
       const roomSelect = document.querySelector("#room-select");
       const roomImage = document.querySelector("#room-image");
+      const temperatureReadings = [
+        document.querySelector("#temperature-t1"),
+        document.querySelector("#temperature-t2"),
+        document.querySelector("#temperature-t3"),
+        document.querySelector("#temperature-t4"),
+      ];
       const chart = document.querySelector("#temperature-chart");
       const radiatorChart = document.querySelector("#radiator-chart");
       let activeSeries = [];
@@ -137,6 +147,14 @@
           [0.85, 0.72, 0.65, 0.55, 0.68, 0.78, 0.82],
           [0.42, 0.35, 0.28, 0.2, 0.3, 0.38, 0.45],
         ].map((values) => values.map((value, index) => ({ value, time: times[index] })));
+      }
+
+      function updateTemperatureReadings(series) {
+        series.forEach((sensor, index) => {
+          const latestReading = sensor.at(-1);
+          const value = latestReading ? `${latestReading.temperature.toFixed(1)} C` : "-- C";
+          temperatureReadings[index].textContent = `T${index + 1}: ${value}`;
+        });
       }
 
       function prepareChartCanvas(canvas, context) {
@@ -283,6 +301,7 @@
           if (loadId === roomLoadId) activeRadiatorSeries = makeFallbackRadiatorSeries();
         }
         if (loadId !== roomLoadId) return;
+        updateTemperatureReadings(activeSeries);
         drawTemperatureChart(activeSeries);
         drawRadiatorChart(activeRadiatorSeries);
       }

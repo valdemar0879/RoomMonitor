@@ -33,6 +33,7 @@ select {
 }
 
 .room-figure {
+  position: relative;
   margin: 1.5rem 0 0;
 }
 
@@ -44,6 +45,38 @@ select {
   max-height: fit-content;
   height: auto;
   object-fit: contain;
+}
+
+.temperature-box {
+  position: absolute;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+/* Adjust these positions to match the sensor locations in the room image. */
+.temp-t1 {
+  top: 8%;
+  left: 8%;
+}
+
+.temp-t2 {
+  top: 8%;
+  right: 8%;
+}
+
+.temp-t3 {
+  bottom: 8%;
+  left: 8%;
+}
+
+.temp-t4 {
+  right: 8%;
+  bottom: 8%;
 }
 
 .chart-section {
