@@ -58,7 +58,6 @@ select {
   box-sizing: border-box;
   min-width: 0;
   max-width: 100%;
-  vertical-align: top;
   background: #ffffff;
   border: 1px solid #e2e2e2;
   border-radius: 6px;
