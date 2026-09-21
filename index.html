@@ -153,7 +153,7 @@
         series.forEach((sensor, index) => {
           const latestReading = sensor.at(-1);
           const value = latestReading ? `${latestReading.temperature.toFixed(1)} C` : "-- C";
-          temperatureReadings[index].textContent = `T${index + 1}: ${value}`;
+          temperatureReadings[index].textContent = value;
         });
       }
 
