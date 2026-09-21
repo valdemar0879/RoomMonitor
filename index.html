@@ -9,17 +9,29 @@
   <body>
     <main class="container">
       <h1>Room Monitor Test page</h1>
-      <p>Pictures below display the current status of the rooms 1 and 2. TEST STRING.</p>
-        <div class="image-container">
-            <div class="image-wrapper">
-            <h2>Room 1</h2>
-            <img src="Brick.jpg" alt="Room 1" />
-            </div>
-            <div class="image-wrapper">
-            <h2>Room 2</h2>
-            <img src="Brick.jpg" alt="Room 2" />
-            </div>
-        </div>
+      <p>Pictures below display the current status of rooms 1 and 2.</p>
+      <label for="room-select">Choose a room:</label>
+      <select id="room-select">
+        <option value="room-1" data-image="Brick.jpg">Room 1</option>
+        <option value="room-2" data-image="Brick.jpg">Room 2</option>
+      </select>
+
+      <figure class="room-figure">
+        <img id="room-image" src="Brick.jpg" alt="Room 1" />
+        <figcaption id="room-caption">Room 1</figcaption>
+      </figure>
     </main>
+    <script>
+      const roomSelect = document.querySelector("#room-select");
+      const roomImage = document.querySelector("#room-image");
+      const roomCaption = document.querySelector("#room-caption");
+
+      roomSelect.addEventListener("change", () => {
+        const selectedRoom = roomSelect.selectedOptions[0];
+        roomImage.src = selectedRoom.dataset.image;
+        roomImage.alt = selectedRoom.textContent;
+        roomCaption.textContent = selectedRoom.textContent;
+      });
+    </script>
   </body>
 </html>
