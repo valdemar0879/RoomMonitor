@@ -1,7 +1,6 @@
 body {
   margin: 0;
   font-family: "Times New Roman", serif;
-  background: linear-gradient(135deg, #0f172a, #1d4ed8);
   color: white;
   min-height: 100vh;
   display: grid;
@@ -15,17 +14,21 @@ body {
 
 .image-container {
   display: flex;
+  flex-direction: row;
   justify-content: center;
+  align-items: flex-start;
   gap: 2rem;
-  flex-wrap: wrap;
   margin-top: 1.5rem;
 }
 
 .image-wrapper {
+  display: inline-block;
   text-align: center;
+  flex: 0 0 auto;
 }
 
 img {
+  display: block;
   width: 300px;
   height: 220px;
   object-fit: cover;
