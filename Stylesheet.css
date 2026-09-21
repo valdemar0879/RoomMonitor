@@ -1,6 +1,6 @@
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: "Times New Roman", serif;
   background: linear-gradient(135deg, #0f172a, #1d4ed8);
   color: white;
   min-height: 100vh;
@@ -9,20 +9,27 @@ body {
 }
 
 .container {
-  background: rgba(15, 23, 42, 0.75);
-  padding: 2rem 3rem;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  padding: 2rem;
+}
+
+.image-container {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+
+.image-wrapper {
   text-align: center;
 }
 
-button {
-  margin-top: 1rem;
-  padding: 0.8rem 1.2rem;
-  border: none;
-  border-radius: 8px;
-  background: #22c55e;
-  color: black;
-  font-weight: bold;
-  cursor: pointer;
+img {
+  width: 300px;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
 }
+
