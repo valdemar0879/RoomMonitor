@@ -9,30 +9,21 @@
   <body>
     <main class="container">
       <h1>Room Monitor Test page</h1>
-      <p>View the current status and temperature history for each room.</p>
-
       <section class="room-panel" aria-live="polite">
         <div class="room-panel-header">
           <div>
-            <label for="room-select">Choose a room:</label>
-            <select id="room-select">
+            <select id="room-select" aria-label="Choose a room">
               <option value="room-1">Room 1</option>
               <option value="room-2">Room 2</option>
             </select>
           </div>
-          <div class="temperature-summary">
-            <span>Current temperature</span>
-            <strong id="current-temperature">21.5 C</strong>
-          </div>
         </div>
 
         <figure class="room-figure">
-          <img id="room-image" src="Brick.jpg" alt="Room 1" />
-          <figcaption id="room-caption">Room 1</figcaption>
+          <img id="room-image" src="RoomSketchV1.jpg" alt="Room 1" />
         </figure>
 
         <div class="chart-section">
-          <h2>Temperature over time</h2>
           <canvas id="temperature-chart" aria-label="Room 1 temperature over time"></canvas>
         </div>
       </section>
@@ -53,8 +44,6 @@
 
       const roomSelect = document.querySelector("#room-select");
       const roomImage = document.querySelector("#room-image");
-      const roomCaption = document.querySelector("#room-caption");
-      const currentTemperature = document.querySelector("#current-temperature");
       const chart = document.querySelector("#temperature-chart");
 
       function drawTemperatureChart(temperatures) {
@@ -114,8 +103,6 @@
         const room = roomData[roomKey];
         roomImage.src = room.image;
         roomImage.alt = room.name;
-        roomCaption.textContent = room.name;
-        currentTemperature.textContent = `${room.temperatures.at(-1).toFixed(1)} C`;
         chart.setAttribute("aria-label", `${room.name} temperature over time`);
         drawTemperatureChart(room.temperatures);
       }
