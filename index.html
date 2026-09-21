@@ -9,29 +9,123 @@
   <body>
     <main class="container">
       <h1>Room Monitor Test page</h1>
-      <p>Pictures below display the current status of rooms 1 and 2.</p>
-      <label for="room-select">Choose a room:</label>
-      <select id="room-select">
-        <option value="room-1" data-image="Brick.jpg">Room 1</option>
-        <option value="room-2" data-image="Brick.jpg">Room 2</option>
-      </select>
+      <p>View the current status and temperature history for each room.</p>
 
-      <figure class="room-figure">
-        <img id="room-image" src="Brick.jpg" alt="Room 1" />
-        <figcaption id="room-caption">Room 1</figcaption>
-      </figure>
+      <section class="room-panel" aria-live="polite">
+        <div class="room-panel-header">
+          <div>
+            <label for="room-select">Choose a room:</label>
+            <select id="room-select">
+              <option value="room-1">Room 1</option>
+              <option value="room-2">Room 2</option>
+            </select>
+          </div>
+          <div class="temperature-summary">
+            <span>Current temperature</span>
+            <strong id="current-temperature">21.5 C</strong>
+          </div>
+        </div>
+
+        <figure class="room-figure">
+          <img id="room-image" src="Brick.jpg" alt="Room 1" />
+          <figcaption id="room-caption">Room 1</figcaption>
+        </figure>
+
+        <div class="chart-section">
+          <h2>Temperature over time</h2>
+          <canvas id="temperature-chart" aria-label="Room 1 temperature over time"></canvas>
+        </div>
+      </section>
     </main>
     <script>
+      const roomData = {
+        "room-1": {
+          name: "Room 1",
+          image: "Brick.jpg",
+          temperatures: [20.1, 20.7, 21.4, 21.2, 22.0, 21.5, 21.8],
+        },
+        "room-2": {
+          name: "Room 2",
+          image: "Brick.jpg",
+          temperatures: [18.9, 19.4, 19.8, 20.1, 20.0, 20.6, 20.3],
+        },
+      };
+
       const roomSelect = document.querySelector("#room-select");
       const roomImage = document.querySelector("#room-image");
       const roomCaption = document.querySelector("#room-caption");
+      const currentTemperature = document.querySelector("#current-temperature");
+      const chart = document.querySelector("#temperature-chart");
+
+      function drawTemperatureChart(temperatures) {
+        const context = chart.getContext("2d");
+        const width = chart.clientWidth;
+        const height = chart.clientHeight;
+        const scale = window.devicePixelRatio || 1;
+        const padding = { top: 20, right: 20, bottom: 35, left: 42 };
+        const minimum = Math.floor(Math.min(...temperatures) - 1);
+        const maximum = Math.ceil(Math.max(...temperatures) + 1);
+
+        chart.width = width * scale;
+        chart.height = height * scale;
+        context.setTransform(scale, 0, 0, scale, 0, 0);
+        context.clearRect(0, 0, width, height);
+        context.font = "12px Times New Roman";
+        context.fillStyle = "#555555";
+        context.strokeStyle = "#dddddd";
+        context.lineWidth = 1;
+
+        for (let value = minimum; value <= maximum; value += 1) {
+          const y = padding.top + ((maximum - value) / (maximum - minimum)) * (height - padding.top - padding.bottom);
+          context.beginPath();
+          context.moveTo(padding.left, y);
+          context.lineTo(width - padding.right, y);
+          context.stroke();
+          context.fillText(`${value} C`, 4, y + 4);
+        }
+
+        context.strokeStyle = "#2374ab";
+        context.lineWidth = 3;
+        context.beginPath();
+        temperatures.forEach((temperature, index) => {
+          const x = padding.left + (index / (temperatures.length - 1)) * (width - padding.left - padding.right);
+          const y = padding.top + ((maximum - temperature) / (maximum - minimum)) * (height - padding.top - padding.bottom);
+          if (index === 0) context.moveTo(x, y);
+          else context.lineTo(x, y);
+        });
+        context.stroke();
+
+        context.fillStyle = "#2374ab";
+        temperatures.forEach((temperature, index) => {
+          const x = padding.left + (index / (temperatures.length - 1)) * (width - padding.left - padding.right);
+          const y = padding.top + ((maximum - temperature) / (maximum - minimum)) * (height - padding.top - padding.bottom);
+          context.beginPath();
+          context.arc(x, y, 4, 0, Math.PI * 2);
+          context.fill();
+        });
+
+        context.fillStyle = "#555555";
+        context.fillText("12:00", padding.left - 12, height - 12);
+        context.fillText("18:00", width / 2 - 12, height - 12);
+        context.fillText("00:00", width - padding.right - 24, height - 12);
+      }
+
+      function showRoom(roomKey) {
+        const room = roomData[roomKey];
+        roomImage.src = room.image;
+        roomImage.alt = room.name;
+        roomCaption.textContent = room.name;
+        currentTemperature.textContent = `${room.temperatures.at(-1).toFixed(1)} C`;
+        chart.setAttribute("aria-label", `${room.name} temperature over time`);
+        drawTemperatureChart(room.temperatures);
+      }
 
       roomSelect.addEventListener("change", () => {
-        const selectedRoom = roomSelect.selectedOptions[0];
-        roomImage.src = selectedRoom.dataset.image;
-        roomImage.alt = selectedRoom.textContent;
-        roomCaption.textContent = selectedRoom.textContent;
+        showRoom(roomSelect.value);
       });
+
+      window.addEventListener("resize", () => showRoom(roomSelect.value));
+      showRoom(roomSelect.value);
     </script>
   </body>
 </html>

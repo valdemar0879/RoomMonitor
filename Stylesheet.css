@@ -9,6 +9,7 @@ body {
 }
 
 .container {
+  width: min(100% - 2rem, 760px);
   text-align: center;
   padding: 2rem;
 }
@@ -17,16 +18,50 @@ h1, p {
   text-align: center;
 }
 
-.room-figure {
-  display: inline-block;
-  margin: 1.5rem 0 0;
-  text-align: center;
+.room-panel {
+  width: 100%;
+  margin-top: 2rem;
+  padding: 1.5rem;
+  box-sizing: border-box;
+  border: 1px solid #d7d7d7;
+  border-radius: 12px;
+  background: #fafafa;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.room-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  text-align: left;
 }
 
 select {
   margin-left: 0.5rem;
   padding: 0.25rem 0.5rem;
   font: inherit;
+}
+
+.temperature-summary {
+  text-align: right;
+}
+
+.temperature-summary span {
+  display: block;
+  color: #555555;
+  font-size: 0.85rem;
+}
+
+.temperature-summary strong {
+  display: block;
+  margin-top: 0.2rem;
+  color: #2374ab;
+  font-size: 1.5rem;
+}
+
+.room-figure {
+  margin: 1.5rem 0 0;
 }
 
 .room-figure figcaption {
@@ -44,9 +79,39 @@ select {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Keep the figure centered while preserving its fixed image dimensions. */
-.room-figure {
-  vertical-align: top;
-  margin-top: 1.5rem;
+.chart-section {
+  margin-top: 2rem;
+  text-align: left;
+}
+
+.chart-section h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.2rem;
+}
+
+#temperature-chart {
+  display: block;
+  width: 100%;
+  height: 250px;
+  background: #ffffff;
+  border: 1px solid #e2e2e2;
+  border-radius: 6px;
+}
+
+@media (max-width: 520px) {
+  .room-panel-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .temperature-summary {
+    text-align: left;
+  }
+
+  .room-figure img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 300 / 220;
+  }
 }
 
