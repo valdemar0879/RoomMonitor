@@ -63,23 +63,23 @@ select {
 
 /* Adjust these positions to match the sensor locations in the room image. */
 .temp-t1 {
-  top: 8%;
+  top: 50%;
   left: 50%;
 }
 
 .temp-t2 {
   top: 50%;
-  left: 3%;
+  left: 50%;
 }
 
 .temp-t3 {
-  top: 96%;
+  top: 50%;
   left: 50%;
 }
 
 .temp-t4 {
   top: 50%;
-  left: 80%;
+  left: 50%;
 }
 
 .chart-section {
