@@ -246,6 +246,14 @@
             else context.lineTo(x, y);
           });
           context.stroke();
+
+          radiator.forEach((point, index) => {
+            const x = padding.left + (index / (longestSeries - 1)) * (width - padding.left - padding.right);
+            const y = padding.top + (1 - point.value) * (height - padding.top - padding.bottom);
+            context.beginPath();
+            context.arc(x, y, 4, 0, Math.PI * 2);
+            context.fill();
+          });
         });
 
         context.fillStyle = "#555555";
