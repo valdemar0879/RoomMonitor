@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>Heating &amp; Cooling Data</title>
+    <link rel="stylesheet" href="stylesheet.css">
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <main class="app">
+      <header class="page-header">
+        <p class="eyebrow">Experiment data</p>
+        <h1>Heating &amp; cooling measurements</h1>
+        <p class="intro">Measurements from the heating and cooling system identification experiment.</p>
+        <a class="download-link" href="measurements.csv" download>Download source CSV</a>
+      </header>
+
+      <p class="status" id="status" role="status" aria-live="polite">Loading measurements from measurements.csv…</p>
+
+      <section class="data-panel" id="data-panel" hidden aria-labelledby="table-title">
+        <div class="data-toolbar">
+          <div>
+            <h2 id="table-title">Measurement data</h2>
+            <p class="summary" id="summary"></p>
+          </div>
+        </div>
+        <div class="table-scroll" tabindex="0" aria-label="Scrollable measurement table">
+          <table>
+            <caption class="visually-hidden">Heating and cooling sensor measurements, including date and time</caption>
+            <thead id="table-head"></thead>
+            <tbody id="table-body"></tbody>
+          </table>
+        </div>
+        <p class="table-note" id="table-note">Empty cells in the source CSV are shown as em dashes.</p>
+      </section>
+    </main>
+  </body>
+</html>
