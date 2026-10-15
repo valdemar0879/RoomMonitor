@@ -19,7 +19,7 @@ async function loadMeasurementFiles() {
     if (!Array.isArray(manifest.files) || manifest.files.length === 0) {
       throw new Error("The measurement file list is empty.");
     }
-    if (manifest.files.some((file) => typeof file !== "string" || !/^[\w.-]+\.csv$/i.test(file))) {
+    if (manifest.files.some((file) => typeof file !== "string" || !/^[\w .#()-]+\.csv$/i.test(file))) {
       throw new Error("The measurement file list contains an invalid CSV filename.");
     }
 
