@@ -14,10 +14,16 @@
         <p class="eyebrow">Experiment data</p>
         <h1>Heating &amp; cooling measurements</h1>
         <p class="intro">Measurements from the heating and cooling system identification experiment.</p>
-        <a class="download-link" href="measurements.csv" download>Download source CSV</a>
+        <div class="file-controls">
+          <label for="measurement-select">Choose a measurement file</label>
+          <select id="measurement-select" disabled>
+            <option>Loading files…</option>
+          </select>
+          <a class="download-link" id="download-link" href="mesurements/measurements.csv" download>Download source CSV</a>
+        </div>
       </header>
 
-      <p class="status" id="status" role="status" aria-live="polite">Loading measurements from measurements.csv…</p>
+      <p class="status" id="status" role="status" aria-live="polite">Loading measurement files…</p>
 
       <section class="data-panel" id="data-panel" hidden aria-labelledby="table-title">
         <div class="data-toolbar">
